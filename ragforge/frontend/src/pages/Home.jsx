@@ -1,13 +1,19 @@
 import React from 'react'
-import Status from '../components/Status'
+import Header from '../components/Header'
+import Sidebar from '../components/Sidebar'
 
-export default function Home() {
+export default function Home(){
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="p-6 bg-white rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">RAGForge</h1>
-        <p className="mb-4">Frontend running.</p>
-        <Status />
+    <div>
+      <Header />
+      <div className="app-layout">
+        <Sidebar />
+        <main className="main">
+          <div className="card">
+            <h2 className="welcome">Welcome to RAGForge</h2>
+            <p className="muted">Local-first RAG platform. Backend status shown elsewhere.</p>
+          </div>
+        </main>
       </div>
     </div>
   )
