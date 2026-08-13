@@ -3,7 +3,7 @@
 
 import os
 
-import fitz
+import pymupdf
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
         print(f"PDF not found: {pdf_path}")
         return
 
-    doc = fitz.open(pdf_path)
+    doc = pymupdf.open(pdf_path)
     page_count = doc.page_count
     print(f"Pages: {page_count}")
 
