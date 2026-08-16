@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyc
 *.egg-info/
 .env
 .venv/
@@ -21,4 +22,12 @@ dist/
 Thumbs.db
 
 # Data
-ragforge/data/
+# Ignore generated local vector stores and binary artifacts.
+data/chroma/
+data/chroma/**
+*.bin
+*.sqlite3
+*.db
+
+# Keep source docs tracked unless you want to hide the PDF corpus too.
+# data/documents/*.pdf
