@@ -7,6 +7,7 @@ for a concise answer grounded only in the provided documents.
 """
 
 import os
+import time
 
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
@@ -52,10 +53,23 @@ def main():
         print("Question cannot be empty.")
         return
 
+    rag_start_time = time.perf_counter()
+
+    retrieval_start_time = time.perf_counter()
     docs = vector_store.similarity_search(question, k=3)
+    retrieval_end_time = time.perf_counter()
+    retrieval_latency_ms = (retrieval_end_time - retrieval_start_time) * 1000
+
     llm = ChatOllama(model="qwen3:4b")
     prompt = build_prompt(question, docs)
+
+    generation_start_time = time.perf_counter()
     result = llm.invoke(prompt.format_messages())
+    generation_end_time = time.perf_counter()
+    generation_latency_s = generation_end_time - generation_start_time
+
+    rag_end_time = time.perf_counter()
+    total_latency_s = rag_end_time - rag_start_time
 
     print("\nQuestion:")
     print(question)
@@ -65,6 +79,15 @@ def main():
     pages = sorted({doc.metadata.get("page") for doc in docs if doc.metadata.get("page") is not None})
     print("\nRetrieved source pages:")
     print(pages)
+
+    print("\n" + "="*40)
+    print("RAG PERFORMANCE")
+    print("="*40)
+    print(f"Retrieved chunks: {len(docs)}")
+    print(f"Retrieval latency: {retrieval_latency_ms:.2f} ms")
+    print(f"LLM generation latency: {generation_latency_s:.2f} s")
+    print(f"Total RAG latency: {total_latency_s:.2f} s")
+    print("="*40)
 
 
 if __name__ == "__main__":
