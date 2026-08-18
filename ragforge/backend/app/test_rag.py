@@ -9,9 +9,10 @@ for a concise answer grounded only in the provided documents.
 import os
 import time
 
-from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama, OllamaEmbeddings
+from langchain_ollama import ChatOllama
+
+from retrieval.retriever import retrieve_documents
 
 
 def build_prompt(question: str, docs):
@@ -38,16 +39,6 @@ def build_prompt(question: str, docs):
 
 
 def main():
-    persist_dir = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "data", "chroma")
-    )
-    embeddings = OllamaEmbeddings(model="qwen3-embedding:0.6b")
-    vector_store = Chroma(
-        persist_directory=persist_dir,
-        embedding_function=embeddings,
-        collection_name="ragforge_test_docs",
-    )
-
     question = input("Ask a question: ").strip()
     if not question:
         print("Question cannot be empty.")
@@ -56,7 +47,7 @@ def main():
     rag_start_time = time.perf_counter()
 
     retrieval_start_time = time.perf_counter()
-    docs = vector_store.similarity_search(question, k=3)
+    docs = retrieve_documents(question, k=3)
     retrieval_end_time = time.perf_counter()
     retrieval_latency_ms = (retrieval_end_time - retrieval_start_time) * 1000
 

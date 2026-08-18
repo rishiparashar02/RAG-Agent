@@ -9,6 +9,8 @@ chunks with OllamaEmbeddings, stores them in a local ChromaDB collection under
 import os
 from pprint import pprint
 
+from numpy import long
+
 import pymupdf
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
