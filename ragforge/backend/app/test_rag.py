@@ -6,36 +6,10 @@ constructs a prompt from retrieved context, and asks the local ChatOllama model
 for a concise answer grounded only in the provided documents.
 """
 
-import os
-import time
-
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama
-
-from retrieval.retriever import retrieve_documents
-
-
-def build_prompt(question: str, docs):
-    context_blocks = []
-    for doc in docs:
-        source = doc.metadata.get("source", "unknown")
-        page = doc.metadata.get("page", "unknown")
-        text = doc.page_content.strip()
-        context_blocks.append(
-            f"Source: {source}\nPage: {page}\nContext:\n{text}\n"
-        )
-
-    context_text = "\n\n---\n\n".join(context_blocks)
-
-    return ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                "Answer using ONLY the provided context. If the answer cannot be found in the context, say that the information is not available in the provided documents. Do not invent facts. Give a concise answer. At the end, list the source pages used.",
-            ),
-            ("human", f"Context:\n{context_text}\n\nQuestion: {question}"),
-        ]
-    )
+from rag.rag_service import ask_question
+from rag.rag_service import last_generation_latency_s
+from rag.rag_service import last_retrieval_latency_ms
+from rag.rag_service import last_total_latency_s
 
 
 def main():
@@ -44,28 +18,15 @@ def main():
         print("Question cannot be empty.")
         return
 
-    rag_start_time = time.perf_counter()
-
-    retrieval_start_time = time.perf_counter()
-    docs = retrieve_documents(question, k=3)
-    retrieval_end_time = time.perf_counter()
-    retrieval_latency_ms = (retrieval_end_time - retrieval_start_time) * 1000
-
-    llm = ChatOllama(model="qwen3:4b")
-    prompt = build_prompt(question, docs)
-
-    generation_start_time = time.perf_counter()
-    result = llm.invoke(prompt.format_messages())
-    generation_end_time = time.perf_counter()
-    generation_latency_s = generation_end_time - generation_start_time
-
-    rag_end_time = time.perf_counter()
-    total_latency_s = rag_end_time - rag_start_time
+    answer, docs = ask_question(question, k=3)
+    retrieval_latency_ms = last_retrieval_latency_ms
+    generation_latency_s = last_generation_latency_s
+    total_latency_s = last_total_latency_s
 
     print("\nQuestion:")
     print(question)
     print("\nAnswer:")
-    print(result.content)
+    print(answer)
 
     pages = sorted({doc.metadata.get("page") for doc in docs if doc.metadata.get("page") is not None})
     print("\nRetrieved source pages:")
